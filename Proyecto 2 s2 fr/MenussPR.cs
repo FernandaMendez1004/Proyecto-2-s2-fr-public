@@ -15,8 +15,9 @@ namespace Proyecto_2_s2_fr
                 SirvePaTodo.OpcionMenu("4", "Gestión de Solicitudes", ConsoleColor.Yellow);
                 SirvePaTodo.OpcionMenu("5", "Gestión de Repuestos", ConsoleColor.Yellow);
                 SirvePaTodo.OpcionMenu("6", "Atención y Diagnósticos", ConsoleColor.Yellow);
-                SirvePaTodo.OpcionMenu("7", "Reportes y Estadísticas", ConsoleColor.Yellow);
-                SirvePaTodo.OpcionMenu("8", "Salir", ConsoleColor.DarkRed);
+                SirvePaTodo.OpcionMenu("7", "Reportes ", ConsoleColor.Yellow);
+                SirvePaTodo.OpcionMenu("8", "Generar datos de prueba", ConsoleColor.Yellow);
+                SirvePaTodo.OpcionMenu("9", "Salir", ConsoleColor.DarkRed);
                 SirvePaTodo.PieMenu(ConsoleColor.DarkGray);
 
                 if (!int.TryParse(Console.ReadLine(), out opcionMain))
@@ -49,9 +50,12 @@ namespace Proyecto_2_s2_fr
                         case 7:
                             MenuReportes();
                             break;
-                        case 8:
+                        case 9:
                             Console.Clear();
                             SirvePaTodo.MensajeExito("                   Bye Gracias por utilizar mi pryecto :) ");
+                            break;
+                        case 8:
+                            GenerarDatosPrueba();
                             break;
                         default:
                             SirvePaTodo.MensajeError("La opcion seleccionada no existe");
@@ -59,7 +63,7 @@ namespace Proyecto_2_s2_fr
                             break;
                     }
                 }
-            } while (opcionMain != 8);
+            } while (opcionMain != 9);
         }
         public static void MenuClientes()
         {
@@ -2857,17 +2861,25 @@ Codigo: { encontrado.Codigo}
                 {
                     switch (opcion)
                     {
+                        case 1:
+                            ReporteSolicitudes();
+                            break;
                         case 2:
+                            ReporteTecnicos();
+                            break;
                         case 3:
+                            ReporteIngresos();
+                            break;
                         case 4:
+                            ReporteInventario();
+                            break;
                         case 5:
-                            SirvePaTodo.MensajeError("Este reporte todavía está en desarrollo.");
-                            SirvePaTodo.Pausa();
+                            ReporteClientesEquipos();
                             break;
                         case 6:
                             break;
                         default:
-                            SirvePaTodo.MensajeError(" La opcion seleccionada no existe.");
+                            SirvePaTodo.MensajeError("La opción seleccionada no existe.");
                             SirvePaTodo.Pausa();
                             break;
                     }
@@ -2940,6 +2952,236 @@ SOLICITUDES POR PRIORIDAD
 ----------------------------------------
 Normales: {normales}
 Urgentes: {urgentes}");
+            SirvePaTodo.Pausa();
+        }
+
+        public static void ReporteTecnicos()
+        {
+            SirvePaTodo.Titulo("RENDIMIENTO DE TÉCNICOS", ConsoleColor.Cyan);
+
+            if (Program.tecnicos.Count == 0)
+            {
+                SirvePaTodo.MensajeError("No existen técnicos registrados.");
+                SirvePaTodo.Pausa();
+                return;
+            }
+
+            int totalActivos = 0;
+            int totalFinalizados = 0;
+            foreach (Tecnico tecnico in Program.tecnicos)
+            {
+                Console.WriteLine(@$"
+Código: {tecnico.Codigo}
+Nombre: {tecnico.Nombre}
+Especialidad: {tecnico.Especialidad}
+Trabajos activos: {tecnico.TrabajosActivos}
+Servicios finalizados: {tecnico.ServiciosFinalizados}
+Calificación promedio: {tecnico.CalificacionPromedio:F2}
+----------------------------------------");
+
+                totalActivos += tecnico.TrabajosActivos;
+                totalFinalizados += tecnico.ServiciosFinalizados;
+            }
+
+            Console.WriteLine(@$"
+Total de técnicos: {Program.tecnicos.Count}
+Trabajos activos: {totalActivos}
+Servicios finalizados: {totalFinalizados}");
+            SirvePaTodo.Pausa();
+        }
+
+        public static void ReporteIngresos()
+        {
+            SirvePaTodo.Titulo("REPORTE DE INGRESOS", ConsoleColor.Cyan);
+
+            double manoObra = 0, repuestos = 0, ingresos = 0;
+            int entregadas = 0;
+
+            foreach (Solicitud solicitud in Program.solicitudes)
+            {
+                if (solicitud.Estado == EstadoSolicitud.Entregada)
+                {
+                    manoObra += solicitud.CostoManoObra;
+                    repuestos += solicitud.CostoRepuestos;
+                    ingresos += solicitud.Total;
+                    entregadas++;
+                }
+            }
+
+            Console.WriteLine(@$"
+Solicitudes entregadas: {entregadas}
+
+Ingresos por mano de obra: Q{manoObra:F2}
+Ingresos por repuestos: Q{repuestos:F2}
+----------------------------------------
+TOTAL DE INGRESOS: Q{ingresos:F2}");
+            SirvePaTodo.Pausa();
+        }
+
+        public static void ReporteInventario()
+        {
+            SirvePaTodo.Titulo("REPORTE DE INVENTARIO", ConsoleColor.Cyan);
+
+            if (Program.repuestos.Count == 0)
+            {
+                SirvePaTodo.MensajeError("No existen repuestos registrados.");
+                SirvePaTodo.Pausa();
+                return;
+            }
+
+            int totalUnidades = 0;
+            int existenciasBajas = 0;
+            double valorInventario = 0;
+
+            foreach (Repuesto repuesto in Program.repuestos)
+            {
+                Console.WriteLine(@$"
+Código: {repuesto.Codigo}
+Nombre: {repuesto.Nombre}
+Categoría: {repuesto.Categoria}
+Existencia: {repuesto.Existencia}
+Existencia mínima: {repuesto.ExistenciaMinima}
+Precio de venta: Q{repuesto.PrecioVenta:F2}
+----------------------------------------");
+                totalUnidades += repuesto.Existencia;
+                valorInventario += repuesto.Existencia * repuesto.CostoUnitario;
+                if (repuesto.Existencia <= repuesto.ExistenciaMinima)
+                {
+                    existenciasBajas++;
+                    SirvePaTodo.MensajeError("Advertencia: existencia baja.");
+                }
+            }
+
+            Console.WriteLine(@$"
+Repuestos diferentes: {Program.repuestos.Count}
+Total de unidades: {totalUnidades}
+Repuestos con existencia baja: {existenciasBajas}
+Valor del inventario al costo: Q{valorInventario:F2}");
+            SirvePaTodo.Pausa();
+        }
+        public static void ReporteClientesEquipos()
+        {
+            SirvePaTodo.Titulo("REPORTE DE CLIENTES Y EQUIPOS", ConsoleColor.Cyan);
+            if (Program.clientes.Count == 0)
+            {
+                SirvePaTodo.MensajeError("No existen clientes registrados.");
+                SirvePaTodo.Pausa();
+                return;
+            }
+            foreach (Cliente cliente in Program.clientes)
+            {
+                int cantidadEquipos = 0;
+
+                foreach (Equipo equipo in Program.equipos)
+                {
+                    if (equipo.Propietario.Codigo == cliente.Codigo)
+                    {
+                        cantidadEquipos++;
+                    }
+                }
+
+                Console.WriteLine(@$"
+Código: {cliente.Codigo}
+Cliente: {cliente.Nombre}
+Tipo: {cliente.TipoCliente}
+Equipos registrados: {cantidadEquipos}
+Solicitudes registradas: {cliente.CantidadSolicitudes}
+----------------------------------------");
+            }
+            Console.WriteLine(@$"
+Total de clientes: {Program.clientes.Count}
+Total de equipos: {Program.equipos.Count}");
+            SirvePaTodo.Pausa();
+        }
+
+        public static void GenerarDatosPrueba()
+        {
+            SirvePaTodo.Titulo("GENERAR DATOS DE PRUEBA", ConsoleColor.Cyan);
+            Random aleatorio = new Random();
+
+            string[] nombres = { "Sakata Gintoki", "Shimura Shinpachi", "Kagura", "Okita Sougo" };
+            string[] marcas = { "Asus", "Dell", "Lenovo", "Apple", "Toshiba" };
+            string[] problemas = { "Pantalla congelada", "Equipo lento", "Sistema operativo lento", "Error de sistema" };
+
+            string codigoCliente = "";
+            do
+            {
+              codigoCliente = SirvePaTodo.GenerarCodigo("CLI");
+            } while (BuscarClientePorCodigo(codigoCliente) != null);
+
+            Cliente cliente = new Cliente(codigoCliente, nombres[aleatorio.Next(nombres.Length)], "23658947", "seegintama@gmail.com", "Estudiante", 0);
+            Program.clientes.Add(cliente);
+
+            string codigoTecnico = "";
+            do
+            {
+              codigoTecnico = SirvePaTodo.GenerarCodigo("TEC");
+            } while (BuscarTecnicoPorCodigo(codigoTecnico) != null);
+
+            Tecnico tecnico = new Tecnico(codigoTecnico, "Kondou Isaou", Especialidad.Computadoras, true, 0, 0, 0);
+            Program.tecnicos.Add(tecnico);
+
+            string codigoEquipo = "";
+            do
+            {
+              codigoEquipo = SirvePaTodo.GenerarCodigo("POR");
+            } while (BuscarEquipoPorCodigo(codigoEquipo) != null);
+
+            string serie = "01234" + codigoEquipo;
+            Equipo equipo = new ComputadoraPortatil(codigoEquipo, serie, marcas[aleatorio.Next(marcas.Length)], "2019", cliente, "Buen estado", "Cargador", true);
+
+            Program.equipos.Add(equipo);
+            string codigoSolicitud = "";
+            do
+            {
+              codigoSolicitud = SirvePaTodo.GenerarCodigo("SOL");
+            } while (BuscarSolicitudPorCodigo(codigoSolicitud) != null);
+
+            PrioridadSolicitud prioridad = PrioridadSolicitud.Normal;
+            if (aleatorio.Next(2) == 1)
+            {
+                prioridad = PrioridadSolicitud.Urgente;
+            }
+
+            Solicitud solicitud = new Solicitud(codigoSolicitud, cliente, equipo, problemas[aleatorio.Next(problemas.Length)], prioridad);
+            Program.solicitudes.Add(solicitud);
+            solicitud.CambiarEstado(EstadoSolicitud.EnEspera);
+
+            if (prioridad == PrioridadSolicitud.Urgente)
+            {
+                Program.colaUrgente.Enqueue(solicitud);
+            }
+            else
+            {
+                Program.colaNormal.Enqueue(solicitud);
+            }
+
+            cliente.CantidadSolicitudes++;
+            string codigoRepuesto = "";
+            bool repetido;
+            do
+            {
+                codigoRepuesto = SirvePaTodo.GenerarCodigo("REP");
+                repetido = false;
+                foreach (Repuesto repuesto in Program.repuestos)
+                {
+                    if (repuesto.Codigo == codigoRepuesto)
+                    {
+                        repetido = true;
+                    }
+                }
+            } while (repetido);
+
+            Repuesto nuevoRepuesto = new Repuesto(codigoRepuesto, "Memoria SD", "Computadoras", aleatorio.Next(5, 21), 3, 100, 150);
+            Program.repuestos.Add(nuevoRepuesto);
+            SirvePaTodo.MensajeExito("Datos agregados");
+            Console.WriteLine(@$"
+Cliente: {cliente.Codigo}
+Técnico: {tecnico.Codigo}
+Equipo: {equipo.Codigo}
+Solicitud: {solicitud.Codigo}
+Prioridad: {solicitud.Prioridad}
+Repuesto: {nuevoRepuesto.Codigo}");
             SirvePaTodo.Pausa();
         }
     }
