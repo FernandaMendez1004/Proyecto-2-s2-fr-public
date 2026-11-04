@@ -37,7 +37,7 @@ namespace Proyecto_2_s2_fr
         }
 
         public static void OpcionMenu(string numero, string texto, ConsoleColor colorTexto)
-        {
+        { //fuck u
             Console.ForegroundColor = colorTexto;
             Console.Write("  [" + numero + "] ");
 
